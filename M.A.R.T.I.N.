@@ -1,0 +1,4008 @@
+{
+  "name": "M.A.R.T.I.N.",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "MARTIN: Market Analysis & Research Team Intelligence Navigator",
+        "formDescription": "Enter your market research query to receive a comprehensive intelligence report.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Market Research Query",
+              "placeholder": "e.g., Future of Renewable Energy in Europe",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "placeholder": "name@example.com",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -2400,
+        880
+      ],
+      "id": "dee6341d-ed49-469a-a508-60335303808b",
+      "name": "Market Research Request",
+      "webhookId": "ba86447b-5cda-48ab-a4d6-1e1a07bad686"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Market Research Query: {{ $json['Market Research Query'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are a market research strategist AI. Your mission is to break down a primary Market Research Query into five distinct, in-depth sub-queries (Research Areas). These Research Areas will guide a comprehensive investigation, covering key facets such as market trends, competitive landscape, consumer behavior/sentiment, regulatory environment, and future opportunities/risks.\n\n## Instructions:\n1) Deconstruct the Query: Based on the input \"Market Research Query\", identify five critical Research Areas.\n2) Ensure Comprehensive Coverage: Each Research Area should be specific enough for focused investigation but collectively provide a holistic view of the market.\n3) Maintain Uniqueness: The five Research Areas should explore different angles of the main query, avoiding significant overlap.\n4) Actionable for Research: Frame each Research Area as a query or topic that can be effectively researched.\n\n## Output Format (JSON):\nProvide the output as a JSON object with the following keys:\n{\n  \"topic_1\": \"<First Research Area>\",\n  \"topic_2\": \"<Second Research Area>\",\n  \"topic_3\": \"<Third Research Area>\",\n  \"topic_4\": \"<Fourth Research Area>\",\n  \"topic_5\": \"<Fifth Research Area>\"\n}\n\n## Example Input & Output:\nInput:\n\"Market Research Query: Viability of drone delivery services in urban areas\"\n\nOutput:\n{\n  \"topic_1\": \"Current Market Trends and Adoption of Drone Delivery Services Globally and in Urban Contexts\",\n  \"topic_2\": \"Competitive Landscape Analysis of Existing and Emerging Drone Delivery Companies\",\n  \"topic_3\": \"Consumer Perception, Acceptance, and Concerns Regarding Urban Drone Delivery Services\",\n  \"topic_4\": \"Regulatory Frameworks, Airspace Management, and Safety Regulations for Urban Drone Operations\",\n  \"topic_5\": \"Technological Advancements, Logistical Challenges, and Future Business Models for Urban Drone Delivery\"\n}\n\n## Final Notes\nYour output should be concise, directly usable for initiating parallel research tasks, and strictly follow the JSON format."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -2180,
+        880
+      ],
+      "id": "4ccf3ad7-1146-4208-9f41-ca808dd1d2f0",
+      "name": "Define Research Areas"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"topic_1\": \"Current Market Trends and Adoption of Drone Delivery Services Globally and in Urban Contexts\",\n  \"topic_2\": \"Competitive Landscape Analysis of Existing and Emerging Drone Delivery Companies\",\n  \"topic_3\": \"Consumer Perception, Acceptance, and Concerns Regarding Urban Drone Delivery Services\",\n  \"topic_4\": \"Regulatory Frameworks, Airspace Management, and Safety Regulations for Urban Drone Operations\",\n  \"topic_5\": \"Technological Advancements, Logistical Challenges, and Future Business Models for Urban Drone Delivery\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -2000,
+        1120
+      ],
+      "id": "06d0414d-9e86-4c9b-8abe-aac83d56f667",
+      "name": "5 Research Areas"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Market Research Query: {{ $('Market Research Request').item.json['Market Research Query'] }}\n\nResearch Areas: \n1) {{ $('Define Research Areas').item.json.output.topic_1 }}\n2) {{ $('Define Research Areas').item.json.output.topic_2 }}\n3) {{ $('Define Research Areas').item.json.output.topic_3 }}\n4) {{ $('Define Research Areas').item.json.output.topic_4 }}\n5) {{ $('Define Research Areas').item.json.output.topic_5 }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI report architect specializing in structuring market intelligence reports. Your task is to generate a compelling title, a concise introduction, and five clear chapter headings (based on the provided Research Areas) for a market research report. The output must be in JSON format, including HTML styling as per the example.\n\n## Instructions:\n1) Title: Craft a clear, engaging, and professional title for the market research report that reflects the main query.\n2) Introduction: Write a short introduction (2 paragraphs). The first paragraph should provide context for the market research and its significance. The second paragraph should outline the report's scope, mentioning the key research areas it will cover. This section must start with an `<h2>Introduction</h2>` header.\n3) Table of Contents (Implicit): While you won't generate the full ToC here, list the five chapter titles clearly. These will form the main sections of the report.\n4) Chapter Titles: Each of the five provided Research Areas should be transformed into a chapter title. Ensure each chapter title is formatted as an `<h2>` HTML element, including \"Chapter X:\" prefix.\n5) Styling: Strictly adhere to the HTML styling provided in the example output (e.g., `<h1>` for the main title with specific style, `<div>` for introduction with background, `<hr>` between intro paragraphs, `<h2>` for chapter titles with specific style).\n\n## Output Format (JSON):\n{\n  \"title\": \"<Generated HTML Report Title>\",\n  \"introduction\": \"<Generated HTML Introduction Block>\",\n  \"chapter_1\": \"<h2>Chapter 1: [Transformed Research Area 1 as Title]</h2>\",\n  \"chapter_2\": \"<h2>Chapter 2: [Transformed Research Area 2 as Title]</h2>\",\n  \"chapter_3\": \"<h2>Chapter 3: [Transformed Research Area 3 as Title]</h2>\",\n  \"chapter_4\": \"<h2>Chapter 4: [Transformed Research Area 4 as Title]</h2>\",\n  \"chapter_5\": \"<h2>Chapter 5: [Transformed Research Area 5 as Title]</h2>\"\n}\n\n## Example Output (Illustrative - ensure your generated content is based on the actual input query/topics):\n{\n  \"title\": \"<h1 style='text-align: center; color: #00366D;'>Market Viability Analysis: Drone Delivery Services in Urban Environments</h1>\",\n  \"introduction\": \"<div style='background-color: #f4f4f4; padding: 20px; font-size: 16px; line-height: 1.6; color: #333;'><h2>Introduction</h2><p>The advent of autonomous drone technology presents a paradigm shift for logistics and delivery services, particularly within densely populated urban areas. This market research report provides a comprehensive analysis of the viability of drone delivery services, exploring the multifaceted factors that will determine their successful implementation and scalability. Understanding these dynamics is crucial for stakeholders looking to invest in or develop solutions for this burgeoning sector.</p><hr><p>This report delves into five core research areas: current market trends and adoption rates, the competitive landscape, consumer perception and acceptance, prevailing regulatory frameworks, and an outlook on technological advancements and future business models. The insights herein aim to equip decision-makers with a strategic understanding of the opportunities and challenges in the urban drone delivery market.</p></div>\",\n  \"chapter_1\": \"<h2 style='text-align: center; color: #00366D;'>Chapter 1: Market Trends and Adoption of Urban Drone Delivery</h2>\",\n  \"chapter_2\": \"<h2 style='text-align: center; color: #00366D;'>Chapter 2: Competitive Landscape in Drone Delivery Services</h2>\",\n  \"chapter_3\": \"<h2 style='text-align: center; color: #00366D;'>Chapter 3: Consumer Perception and Acceptance of Urban Drone Deliveries</h2>\",\n  \"chapter_4\": \"<h2 style='text-align: center; color: #00366D;'>Chapter 4: Regulatory Frameworks and Safety in Urban Drone Operations</h2>\",\n  \"chapter_5\": \"<h2 style='text-align: center; color: #00366D;'>Chapter 5: Future Outlook: Technology, Logistics, and Business Models</h2>\"\n}\n\n## Final Notes\nEnsure professionalism in tone and content. The HTML structure and styling must be precisely replicated from the example."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1640,
+        880
+      ],
+      "id": "d5317c6a-b2c0-4041-8b8e-cf74d5ba2db4",
+      "name": "Generate Report Outline"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        720
+      ],
+      "id": "4c745ada-caec-4792-bfdf-4771ad01d91a",
+      "name": "Split Out Report Outline"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1000,
+        860
+      ],
+      "id": "6862347c-d2ce-4bdd-8b7e-af6a582978bf",
+      "name": "Merge Research Areas and Outline"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3da6558a-6372-44f9-8d5a-f18bfe6e1c16",
+              "name": "research_areas_keys",
+              "value": "['topic_1','topic_2','topic_3','topic_4','topic_5']",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1640,
+        540
+      ],
+      "id": "719cbbea-2a29-44f0-8388-f52c558b0a8f",
+      "name": "Set Research Area Keys"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1180,
+        700
+      ],
+      "id": "6510e64d-ec9e-4611-ac05-f9440803c24c",
+      "name": "Merge Research Area Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "research_areas_keys",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1420,
+        540
+      ],
+      "id": "690b76dc-6d74-4a4f-bbdd-1477ad8af87e",
+      "name": "Split Out Research Area Keys"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.research_areas_keys }}",
+                    "rightValue": "topic_1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7081a8b9-aa72-4841-8392-908e2387acf9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1b2472f8-0fb4-4812-bfd8-3a9417fab4a8",
+                    "leftValue": "={{ $json.research_areas_keys }}",
+                    "rightValue": "topic_2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6d0dad77-6120-441a-ae74-55c18a550a8a",
+                    "leftValue": "={{ $json.research_areas_keys }}",
+                    "rightValue": "topic_3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5aff824d-531d-4134-b2a6-f694e1c1f8bf",
+                    "leftValue": "={{ $json.research_areas_keys }}",
+                    "rightValue": "topic_4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c80cc85a-2e2e-4cb2-9e62-dd8c4a48248d",
+                    "leftValue": "={{ $json.research_areas_keys }}",
+                    "rightValue": "topic_5",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -840,
+        820
+      ],
+      "id": "f3f211ce-7e54-4675-94e3-6c2d3e361990",
+      "name": "Switch Research Area"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4",
+          "mode": "list",
+          "cachedResultName": "Deep Research",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Research Area 1 Source URLs": "={{ $('Merge Area 1 Outputs').first().json.numberedUrl.join(\"\\n\") }}",
+            "Research Area 1 Content HTML": "={{ $('Merge Area 1 Outputs').first().json.output.join(\"\\n \\n\") }}",
+            "Research Area 1 Sections Titles": "={{ $json.sections.join(\"\\n\") }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2220,
+        -40
+      ],
+      "id": "c9afcae8-1dfa-400c-999d-c9441d5527e7",
+      "name": "Log Area 1 Data to Sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.output }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        -60
+      ],
+      "id": "ba138641-aad8-486a-ac2c-04c77a1a89ba",
+      "name": "Fetch Area 1 Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        820,
+        -60
+      ],
+      "id": "52a893c2-903f-4d7c-ae0b-34c2c2061aa0",
+      "name": "Split Area 1 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create separate items for each URL with a number\n\n// Transform the input items to create numbered URLs\nreturn items.map((item, index) => {\n  return {\n    json: {\n      number: index + 1,\n      url: item.json.url,\n      // Optional: include a formatted numbered URL if needed\n      numberedUrl: `${index + 1}. ${item.json.url}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        -60
+      ],
+      "id": "ca2c56ad-3500-49ae-b222-0d2942b0a6cd",
+      "name": "Number Area 1 Sources"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        80
+      ],
+      "id": "ad963103-934b-41e3-becd-f103ea180fee",
+      "name": "Collate Area 1 Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title: {{ $('Split Area 1 Results').item.json.title }}\n\nResearch: \n{{ $('Split Area 1 Results').item.json.content }}\n\nSource:\n{{ $json.numberedUrl }}\n\nStyle Guide Example:\n{{ $('Switch Research Area').first().json.introduction }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert market analyst AI. Your primary function is to process research findings for a specific market research area (indicated by the \"Title\" input) and compose a detailed, analytical section for a larger market intelligence report. The output must be in professional HTML, meticulously following the provided \"Style Guide Example\" for formatting (divs, headers, paragraphs, colors, fonts, etc.).\n\n## Report Section Generation Guidelines:\n1. Adherence to Style Guide:\n   - The generated HTML section must strictly conform to the styling (background, padding, font, colors, line height, margins) demonstrated in the \"Style Guide Example\" (specifically, the `report-section` div styling).\n   - The main title for this section, derived from the input \"Title\", should be an `<h1>` element within its own `report-section` div, as shown in the Style Guide's \"Research Report: [Title]\" example.\n\n2. Structure & Formatting for Content:\n   - The main body of research content should be within a separate `report-section` div.\n   - Use `<h2>` for the main heading of the research content if appropriate (e.g., \"Detailed Findings for [Title]\"). The AI should synthesize content under appropriate headings like `<h2>Key Findings</h2>` or `<h3>Aspect 1</h3>`.\n   - Structure the analysis with clear paragraphs (`<p>`), subheadings (`<h3>`, `<h4>` as needed), and lists (`<ul>`/`<ol>`) for readability.\n   - Employ `<hr>` to visually separate distinct sub-sections or ideas within the analysis if it enhances clarity.\n   - Do NOT add a general \"Overview\" or \"Conclusion\" header for this specific section, as it's part of a larger report. Focus solely on presenting the analysis for the given research content.\n\n3. Research-Based Content Synthesis:\n   - Synthesize the information from the \"Research\" input (which is the content scraped from a source).\n   - Write in an informative, analytical, and objective tone. Provide as much detail and insight as possible from the source material.\n   - Ensure a logical flow of information. If the \"Research\" input contains multiple chunks/aspects, organize them coherently.\n\n4. Source Attribution & Clickable Links:\n   - The \"Source\" input provides a numbered URL (e.g., \"1. http://example.com\").\n   - Integrate this source as a clickable inline link within the text where the information from that source is presented. Use the format: `<a href=\"ACTUAL_URL\" target=\"_blank\">[NUMBER]</a>`.\n   - Example: \"Market share for X product increased by Y% in the last quarter <a href='http://example.com' target='_blank'>[1]</a>.\"\n   - Do not create a separate \"References\" or \"Sources\" list at the end of this section.\n\n## Input Data:\n- Title: The title of the specific research source/document.\n- Research: The textual content extracted from the research source.\n- Source: The numbered URL of the research source (e.g., \"1. https://source.url\").\n- Style Guide Example: An HTML snippet showing the desired styling for report sections (passed as 'introduction' field from Switch Research Area node, but it's the intro block style guide).\n\n## Example Output Structure (Applying Style Guide):\n<div class=\"report-section\">\n    <h1>Analysis: [Input Title of the source document]</h1>\n</div>\n<div class=\"report-section\">\n    <h2>Key Insights from [Input Title or relevant sub-heading]</h2>\n    <p>The research indicates that [synthesized information from 'Research' input] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>. Further analysis of the data shows [more synthesized information] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <hr>\n    <h3>Sub-topic Explored</h3>\n    <p>Regarding [specific sub-topic], the findings suggest [details] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <ul>\n        <li>Point one derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n        <li>Point two derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n    </ul>\n</div>\n\n## Final Notes:\nProduce only the HTML body content as per the example, starting from the first `<div class=\"report-section\">` for the title and including all subsequent analytical content. Do not include `<!DOCTYPE html>`, `<head>`, or the opening `<body>` tag in your direct output. The output should be ready to be embedded into a larger HTML document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1220,
+        80
+      ],
+      "id": "9874e314-1581-409e-acd1-3beae3303384",
+      "name": "Analyze Area 1 Data"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "numberedUrl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -60
+      ],
+      "id": "102e1e9e-1842-4aef-b4af-b65c137d8336",
+      "name": "Collate Area 1 Source URLs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1720,
+        -40
+      ],
+      "id": "3248be92-de4f-465b-aa1c-f2089083b202",
+      "name": "Merge Area 1 Outputs"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Research Area 2 Source URLs": "={{ $('Merge Area 2 Outputs').first().json.numberedUrl.join(\"\\n\") }}",
+            "Research Area 2 Content HTML": "={{ $('Merge Area 2 Outputs').first().json.output.join(\"\\n \\n\") }}",
+            "Research Area 2 Sections Titles": "={{ $json.sections.join(\"\\n\") }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2080,
+        460
+      ],
+      "id": "d32327dc-8afa-4d2e-bf81-7e8658dfa9a2",
+      "name": "Log Area 2 Data to Sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "z6RtOODMk2yNcZVw",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.output }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        440
+      ],
+      "id": "f3c333ef-7435-458c-9a4b-bba4ecd3698e",
+      "name": "Fetch Area 2 Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        440
+      ],
+      "id": "0731202d-4030-4e0b-9c5a-15028c35004b",
+      "name": "Split Area 2 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create separate items for each URL starting from number 6\n\n// Transform the input items to create numbered URLs\n// Start counting from 6 and increment by 1\nreturn items.map((item, index) => {\n  const number = index + 6; // Start at 6 instead of 1\n  \n  return {\n    json: {\n      number: number,\n      url: item.json.url,\n      numberedUrl: `${number}. ${item.json.url}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        440
+      ],
+      "id": "27ca2aea-4d94-4303-b308-22a81c8c1e1a",
+      "name": "Number Area 2 Sources"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        580
+      ],
+      "id": "a22e68f7-262d-4507-8a81-f91358af6905",
+      "name": "Collate Area 2 Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title: {{ $('Split Area 2 Results').item.json.title }}\n\nResearch: \n{{ $('Split Area 2 Results').item.json.content }}\n\nSource:\n{{ $json.numberedUrl }}\n\nStyle Guide Example:\n{{ $('Switch Research Area').first().json.introduction }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert market analyst AI. Your primary function is to process research findings for a specific market research area (indicated by the \"Title\" input) and compose a detailed, analytical section for a larger market intelligence report. The output must be in professional HTML, meticulously following the provided \"Style Guide Example\" for formatting (divs, headers, paragraphs, colors, fonts, etc.).\n\n## Report Section Generation Guidelines:\n1. Adherence to Style Guide:\n   - The generated HTML section must strictly conform to the styling (background, padding, font, colors, line height, margins) demonstrated in the \"Style Guide Example\" (specifically, the `report-section` div styling).\n   - The main title for this section, derived from the input \"Title\", should be an `<h1>` element within its own `report-section` div, as shown in the Style Guide's \"Research Report: [Title]\" example.\n\n2. Structure & Formatting for Content:\n   - The main body of research content should be within a separate `report-section` div.\n   - Use `<h2>` for the main heading of the research content if appropriate (e.g., \"Detailed Findings for [Title]\"). The AI should synthesize content under appropriate headings like `<h2>Key Findings</h2>` or `<h3>Aspect 1</h3>`.\n   - Structure the analysis with clear paragraphs (`<p>`), subheadings (`<h3>`, `<h4>` as needed), and lists (`<ul>`/`<ol>`) for readability.\n   - Employ `<hr>` to visually separate distinct sub-sections or ideas within the analysis if it enhances clarity.\n   - Do NOT add a general \"Overview\" or \"Conclusion\" header for this specific section, as it's part of a larger report. Focus solely on presenting the analysis for the given research content.\n\n3. Research-Based Content Synthesis:\n   - Synthesize the information from the \"Research\" input (which is the content scraped from a source).\n   - Write in an informative, analytical, and objective tone. Provide as much detail and insight as possible from the source material.\n   - Ensure a logical flow of information. If the \"Research\" input contains multiple chunks/aspects, organize them coherently.\n\n4. Source Attribution & Clickable Links:\n   - The \"Source\" input provides a numbered URL (e.g., \"1. http://example.com\").\n   - Integrate this source as a clickable inline link within the text where the information from that source is presented. Use the format: `<a href=\"ACTUAL_URL\" target=\"_blank\">[NUMBER]</a>`.\n   - Example: \"Market share for X product increased by Y% in the last quarter <a href='http://example.com' target='_blank'>[1]</a>.\"\n   - Do not create a separate \"References\" or \"Sources\" list at the end of this section.\n\n## Input Data:\n- Title: The title of the specific research source/document.\n- Research: The textual content extracted from the research source.\n- Source: The numbered URL of the research source (e.g., \"1. https://source.url\").\n- Style Guide Example: An HTML snippet showing the desired styling for report sections (passed as 'introduction' field from Switch Research Area node, but it's the intro block style guide).\n\n## Example Output Structure (Applying Style Guide):\n<div class=\"report-section\">\n    <h1>Analysis: [Input Title of the source document]</h1>\n</div>\n<div class=\"report-section\">\n    <h2>Key Insights from [Input Title or relevant sub-heading]</h2>\n    <p>The research indicates that [synthesized information from 'Research' input] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>. Further analysis of the data shows [more synthesized information] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <hr>\n    <h3>Sub-topic Explored</h3>\n    <p>Regarding [specific sub-topic], the findings suggest [details] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <ul>\n        <li>Point one derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n        <li>Point two derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n    </ul>\n</div>\n\n## Final Notes:\nProduce only the HTML body content as per the example, starting from the first `<div class=\"report-section\">` for the title and including all subsequent analytical content. Do not include `<!DOCTYPE html>`, `<head>`, or the opening `<body>` tag in your direct output. The output should be ready to be embedded into a larger HTML document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1100,
+        580
+      ],
+      "id": "339b6f65-afb1-4cc3-986d-3cb4a8cec45f",
+      "name": "Analyze Area 2 Data"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "numberedUrl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        440
+      ],
+      "id": "1aaef970-15b5-4491-be15-84fe303c3f2a",
+      "name": "Collate Area 2 Source URLs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        460
+      ],
+      "id": "6849ae77-49a0-4c0a-888a-87f317757c41",
+      "name": "Merge Area 2 Outputs"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Research Area 3 Source URLs": "={{ $('Merge Area 3 Outputs').first().json.numberedUrl.join(\"\\n\") }}",
+            "Research Area 3 Content HTML": "={{ $('Merge Area 3 Outputs').first().json.output.join(\"\\n \\n\") }}",
+            "Research Area 3 Sections Titles": "={{ $json.sections.join(\"\\n\") }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2080,
+        980
+      ],
+      "id": "c482dd87-65e8-4cff-80b3-0f4fb5894f00",
+      "name": "Log Area 3 Data to Sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "z6RtOODMk2yNcZVw",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.output }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        960
+      ],
+      "id": "56034692-c9e2-4fd3-af2f-8923dd9c18f4",
+      "name": "Fetch Area 3 Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        960
+      ],
+      "id": "436cb9d3-7526-4502-a37d-23bcb1232f68",
+      "name": "Split Area 3 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create separate items for each URL starting from number 11\n\n// Transform the input items to create numbered URLs\n// Start counting from 11 and increment by 1\nreturn items.map((item, index) => {\n  const number = index + 11; // Start at 11 \n  \n  return {\n    json: {\n      number: number,\n      url: item.json.url,\n      numberedUrl: `${number}. ${item.json.url}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        960
+      ],
+      "id": "710c7463-1897-495c-a12c-a61ce46b4742",
+      "name": "Number Area 3 Sources"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1100
+      ],
+      "id": "25a9d5ab-ae4c-44ea-8ef9-bc4d0a0166d8",
+      "name": "Collate Area 3 Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title: {{ $('Split Area 3 Results').item.json.title }}\n\nResearch: \n{{ $('Split Area 3 Results').item.json.content }}\n\nSource:\n{{ $json.numberedUrl }}\n\nStyle Guide Example:\n{{ $('Switch Research Area').first().json.introduction }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert market analyst AI. Your primary function is to process research findings for a specific market research area (indicated by the \"Title\" input) and compose a detailed, analytical section for a larger market intelligence report. The output must be in professional HTML, meticulously following the provided \"Style Guide Example\" for formatting (divs, headers, paragraphs, colors, fonts, etc.).\n\n## Report Section Generation Guidelines:\n1. Adherence to Style Guide:\n   - The generated HTML section must strictly conform to the styling (background, padding, font, colors, line height, margins) demonstrated in the \"Style Guide Example\" (specifically, the `report-section` div styling).\n   - The main title for this section, derived from the input \"Title\", should be an `<h1>` element within its own `report-section` div, as shown in the Style Guide's \"Research Report: [Title]\" example.\n\n2. Structure & Formatting for Content:\n   - The main body of research content should be within a separate `report-section` div.\n   - Use `<h2>` for the main heading of the research content if appropriate (e.g., \"Detailed Findings for [Title]\"). The AI should synthesize content under appropriate headings like `<h2>Key Findings</h2>` or `<h3>Aspect 1</h3>`.\n   - Structure the analysis with clear paragraphs (`<p>`), subheadings (`<h3>`, `<h4>` as needed), and lists (`<ul>`/`<ol>`) for readability.\n   - Employ `<hr>` to visually separate distinct sub-sections or ideas within the analysis if it enhances clarity.\n   - Do NOT add a general \"Overview\" or \"Conclusion\" header for this specific section, as it's part of a larger report. Focus solely on presenting the analysis for the given research content.\n\n3. Research-Based Content Synthesis:\n   - Synthesize the information from the \"Research\" input (which is the content scraped from a source).\n   - Write in an informative, analytical, and objective tone. Provide as much detail and insight as possible from the source material.\n   - Ensure a logical flow of information. If the \"Research\" input contains multiple chunks/aspects, organize them coherently.\n\n4. Source Attribution & Clickable Links:\n   - The \"Source\" input provides a numbered URL (e.g., \"1. http://example.com\").\n   - Integrate this source as a clickable inline link within the text where the information from that source is presented. Use the format: `<a href=\"ACTUAL_URL\" target=\"_blank\">[NUMBER]</a>`.\n   - Example: \"Market share for X product increased by Y% in the last quarter <a href='http://example.com' target='_blank'>[1]</a>.\"\n   - Do not create a separate \"References\" or \"Sources\" list at the end of this section.\n\n## Input Data:\n- Title: The title of the specific research source/document.\n- Research: The textual content extracted from the research source.\n- Source: The numbered URL of the research source (e.g., \"1. https://source.url\").\n- Style Guide Example: An HTML snippet showing the desired styling for report sections (passed as 'introduction' field from Switch Research Area node, but it's the intro block style guide).\n\n## Example Output Structure (Applying Style Guide):\n<div class=\"report-section\">\n    <h1>Analysis: [Input Title of the source document]</h1>\n</div>\n<div class=\"report-section\">\n    <h2>Key Insights from [Input Title or relevant sub-heading]</h2>\n    <p>The research indicates that [synthesized information from 'Research' input] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>. Further analysis of the data shows [more synthesized information] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <hr>\n    <h3>Sub-topic Explored</h3>\n    <p>Regarding [specific sub-topic], the findings suggest [details] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <ul>\n        <li>Point one derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n        <li>Point two derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n    </ul>\n</div>\n\n## Final Notes:\nProduce only the HTML body content as per the example, starting from the first `<div class=\"report-section\">` for the title and including all subsequent analytical content. Do not include `<!DOCTYPE html>`, `<head>`, or the opening `<body>` tag in your direct output. The output should be ready to be embedded into a larger HTML document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1080,
+        1100
+      ],
+      "id": "23017116-cba5-48b7-883c-f80500657f92",
+      "name": "Analyze Area 3 Data"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "numberedUrl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        960
+      ],
+      "id": "d1bd6269-c6b2-439b-8d4e-c7c56ab799ce",
+      "name": "Collate Area 3 Source URLs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        980
+      ],
+      "id": "29d2bd71-a1c0-4729-8279-221527d9f7fa",
+      "name": "Merge Area 3 Outputs"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Research Area 4 Source URLs": "={{ $('Merge Area 4 Outputs').first().json.numberedUrl.join(\"\\n\") }}",
+            "Research Area 4 Content HTML": "={{ $('Merge Area 4 Outputs').first().json.output.join(\"\\n \\n\") }}",
+            "Research Area 4 Sections Titles": "={{ $json.sections.join(\"\\n\") }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2080,
+        1480
+      ],
+      "id": "9e8368c6-2158-4c50-87a3-962018ad2261",
+      "name": "Log Area 4 Data to Sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.output }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        1460
+      ],
+      "id": "90c15e12-70db-471d-8a6c-4df53fa1fbbe",
+      "name": "Fetch Area 4 Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        1460
+      ],
+      "id": "fa78f5f2-6a13-4acc-ac3c-e9d55a7ee076",
+      "name": "Split Area 4 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create separate items for each URL starting from number 16\n\n// Transform the input items to create numbered URLs\n// Start counting from 16 and increment by 1\nreturn items.map((item, index) => {\n  const number = index + 16; // Start at 16\n  \n  return {\n    json: {\n      number: number,\n      url: item.json.url,\n      numberedUrl: `${number}. ${item.json.url}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1460
+      ],
+      "id": "59b37b5d-7b60-47eb-8bbc-56a80b6ab79c",
+      "name": "Number Area 4 Sources"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1600
+      ],
+      "id": "54af7b72-fd52-4cc1-b04b-eaaf9d3f241b",
+      "name": "Collate Area 4 Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title: {{ $('Split Area 4 Results').item.json.title }}\n\nResearch: \n{{ $('Split Area 4 Results').item.json.content }}\n\nSource:\n{{ $json.numberedUrl }}\n\nStyle Guide Example:\n{{ $('Switch Research Area').first().json.introduction }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert market analyst AI. Your primary function is to process research findings for a specific market research area (indicated by the \"Title\" input) and compose a detailed, analytical section for a larger market intelligence report. The output must be in professional HTML, meticulously following the provided \"Style Guide Example\" for formatting (divs, headers, paragraphs, colors, fonts, etc.).\n\n## Report Section Generation Guidelines:\n1. Adherence to Style Guide:\n   - The generated HTML section must strictly conform to the styling (background, padding, font, colors, line height, margins) demonstrated in the \"Style Guide Example\" (specifically, the `report-section` div styling).\n   - The main title for this section, derived from the input \"Title\", should be an `<h1>` element within its own `report-section` div, as shown in the Style Guide's \"Research Report: [Title]\" example.\n\n2. Structure & Formatting for Content:\n   - The main body of research content should be within a separate `report-section` div.\n   - Use `<h2>` for the main heading of the research content if appropriate (e.g., \"Detailed Findings for [Title]\"). The AI should synthesize content under appropriate headings like `<h2>Key Findings</h2>` or `<h3>Aspect 1</h3>`.\n   - Structure the analysis with clear paragraphs (`<p>`), subheadings (`<h3>`, `<h4>` as needed), and lists (`<ul>`/`<ol>`) for readability.\n   - Employ `<hr>` to visually separate distinct sub-sections or ideas within the analysis if it enhances clarity.\n   - Do NOT add a general \"Overview\" or \"Conclusion\" header for this specific section, as it's part of a larger report. Focus solely on presenting the analysis for the given research content.\n\n3. Research-Based Content Synthesis:\n   - Synthesize the information from the \"Research\" input (which is the content scraped from a source).\n   - Write in an informative, analytical, and objective tone. Provide as much detail and insight as possible from the source material.\n   - Ensure a logical flow of information. If the \"Research\" input contains multiple chunks/aspects, organize them coherently.\n\n4. Source Attribution & Clickable Links:\n   - The \"Source\" input provides a numbered URL (e.g., \"1. http://example.com\").\n   - Integrate this source as a clickable inline link within the text where the information from that source is presented. Use the format: `<a href=\"ACTUAL_URL\" target=\"_blank\">[NUMBER]</a>`.\n   - Example: \"Market share for X product increased by Y% in the last quarter <a href='http://example.com' target='_blank'>[1]</a>.\"\n   - Do not create a separate \"References\" or \"Sources\" list at the end of this section.\n\n## Input Data:\n- Title: The title of the specific research source/document.\n- Research: The textual content extracted from the research source.\n- Source: The numbered URL of the research source (e.g., \"1. https://source.url\").\n- Style Guide Example: An HTML snippet showing the desired styling for report sections (passed as 'introduction' field from Switch Research Area node, but it's the intro block style guide).\n\n## Example Output Structure (Applying Style Guide):\n<div class=\"report-section\">\n    <h1>Analysis: [Input Title of the source document]</h1>\n</div>\n<div class=\"report-section\">\n    <h2>Key Insights from [Input Title or relevant sub-heading]</h2>\n    <p>The research indicates that [synthesized information from 'Research' input] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>. Further analysis of the data shows [more synthesized information] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <hr>\n    <h3>Sub-topic Explored</h3>\n    <p>Regarding [specific sub-topic], the findings suggest [details] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <ul>\n        <li>Point one derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n        <li>Point two derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n    </ul>\n</div>\n\n## Final Notes:\nProduce only the HTML body content as per the example, starting from the first `<div class=\"report-section\">` for the title and including all subsequent analytical content. Do not include `<!DOCTYPE html>`, `<head>`, or the opening `<body>` tag in your direct output. The output should be ready to be embedded into a larger HTML document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1100,
+        1600
+      ],
+      "id": "c787e260-409a-438c-becd-77f57f4bb281",
+      "name": "Analyze Area 4 Data"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "numberedUrl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1460
+      ],
+      "id": "11682df9-0b43-42de-ac09-f6ded03f0b6d",
+      "name": "Collate Area 4 Source URLs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        1480
+      ],
+      "id": "a1d07d66-4b3b-441e-9ece-83aeed012ada",
+      "name": "Merge Area 4 Outputs"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Research Area 5 Source URLs": "={{ $('Merge Area 5 Outputs').first().json.numberedUrl.join(\"\\n\") }}",
+            "Research Area 5 Content HTML": "={{ $('Merge Area 5 Outputs').first().json.output.join(\"\\n \\n\") }}",
+            "Research Area 5 Sections Titles": "={{ $json.sections.join(\"\\n\") }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2080,
+        1980
+      ],
+      "id": "7bc9f663-c276-44e7-8ca4-9932735cb719",
+      "name": "Log Area 5 Data to Sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $json.output }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        1960
+      ],
+      "id": "534217cd-4ac5-44c4-8c31-78cb38320274",
+      "name": "Fetch Area 5 Data"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        1960
+      ],
+      "id": "46cda7d4-317d-43cd-b5c3-f93c029880bc",
+      "name": "Split Area 5 Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create separate items for each URL starting from number 21\n\n// Transform the input items to create numbered URLs\n// Start counting from 21 and increment by 1\nreturn items.map((item, index) => {\n  const number = index + 21; // Start at 21\n  \n  return {\n    json: {\n      number: number,\n      url: item.json.url,\n      numberedUrl: `${number}. ${item.json.url}`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1960
+      ],
+      "id": "99a3b540-0586-4abd-97d8-02ce532c9d94",
+      "name": "Number Area 5 Sources"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        2100
+      ],
+      "id": "d5f12f2d-b66c-4de3-95a5-9d11357d83fa",
+      "name": "Collate Area 5 Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title: {{ $('Split Area 5 Results').item.json.title }}\n\nResearch: \n{{ $('Split Area 5 Results').item.json.content }}\n\nSource:\n{{ $json.numberedUrl }}\n\nStyle Guide Example:\n{{ $('Switch Research Area').first().json.introduction }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an expert market analyst AI. Your primary function is to process research findings for a specific market research area (indicated by the \"Title\" input) and compose a detailed, analytical section for a larger market intelligence report. The output must be in professional HTML, meticulously following the provided \"Style Guide Example\" for formatting (divs, headers, paragraphs, colors, fonts, etc.).\n\n## Report Section Generation Guidelines:\n1. Adherence to Style Guide:\n   - The generated HTML section must strictly conform to the styling (background, padding, font, colors, line height, margins) demonstrated in the \"Style Guide Example\" (specifically, the `report-section` div styling).\n   - The main title for this section, derived from the input \"Title\", should be an `<h1>` element within its own `report-section` div, as shown in the Style Guide's \"Research Report: [Title]\" example.\n\n2. Structure & Formatting for Content:\n   - The main body of research content should be within a separate `report-section` div.\n   - Use `<h2>` for the main heading of the research content if appropriate (e.g., \"Detailed Findings for [Title]\"). The AI should synthesize content under appropriate headings like `<h2>Key Findings</h2>` or `<h3>Aspect 1</h3>`.\n   - Structure the analysis with clear paragraphs (`<p>`), subheadings (`<h3>`, `<h4>` as needed), and lists (`<ul>`/`<ol>`) for readability.\n   - Employ `<hr>` to visually separate distinct sub-sections or ideas within the analysis if it enhances clarity.\n   - Do NOT add a general \"Overview\" or \"Conclusion\" header for this specific section, as it's part of a larger report. Focus solely on presenting the analysis for the given research content.\n\n3. Research-Based Content Synthesis:\n   - Synthesize the information from the \"Research\" input (which is the content scraped from a source).\n   - Write in an informative, analytical, and objective tone. Provide as much detail and insight as possible from the source material.\n   - Ensure a logical flow of information. If the \"Research\" input contains multiple chunks/aspects, organize them coherently.\n\n4. Source Attribution & Clickable Links:\n   - The \"Source\" input provides a numbered URL (e.g., \"1. http://example.com\").\n   - Integrate this source as a clickable inline link within the text where the information from that source is presented. Use the format: `<a href=\"ACTUAL_URL\" target=\"_blank\">[NUMBER]</a>`.\n   - Example: \"Market share for X product increased by Y% in the last quarter <a href='http://example.com' target='_blank'>[1]</a>.\"\n   - Do not create a separate \"References\" or \"Sources\" list at the end of this section.\n\n## Input Data:\n- Title: The title of the specific research source/document.\n- Research: The textual content extracted from the research source.\n- Source: The numbered URL of the research source (e.g., \"1. https://source.url\").\n- Style Guide Example: An HTML snippet showing the desired styling for report sections (passed as 'introduction' field from Switch Research Area node, but it's the intro block style guide).\n\n## Example Output Structure (Applying Style Guide):\n<div class=\"report-section\">\n    <h1>Analysis: [Input Title of the source document]</h1>\n</div>\n<div class=\"report-section\">\n    <h2>Key Insights from [Input Title or relevant sub-heading]</h2>\n    <p>The research indicates that [synthesized information from 'Research' input] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>. Further analysis of the data shows [more synthesized information] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <hr>\n    <h3>Sub-topic Explored</h3>\n    <p>Regarding [specific sub-topic], the findings suggest [details] <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</p>\n    <ul>\n        <li>Point one derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n        <li>Point two derived from research <a href=\"[URL_from_Source]\" target=\"_blank\">[Number_from_Source]</a>.</li>\n    </ul>\n</div>\n\n## Final Notes:\nProduce only the HTML body content as per the example, starting from the first `<div class=\"report-section\">` for the title and including all subsequent analytical content. Do not include `<!DOCTYPE html>`, `<head>`, or the opening `<body>` tag in your direct output. The output should be ready to be embedded into a larger HTML document."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1080,
+        2100
+      ],
+      "id": "2502fc2e-85a8-41a8-8d5b-6caac0952fbd",
+      "name": "Analyze Area 5 Data"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "numberedUrl"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        1960
+      ],
+      "id": "fc1b6daf-2a02-42bc-b583-e9060a51e22b",
+      "name": "Collate Area 5 Source URLs"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        1980
+      ],
+      "id": "7d1eee22-6958-4fde-8ff1-f12ad0557216",
+      "name": "Merge Area 5 Outputs"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Market Research Query",
+              "lookupValue": "={{ $('Market Research Request').first().json['Market Research Query'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3980,
+        860
+      ],
+      "id": "f41455a7-29e5-498d-8ad7-4ed23f9b0509",
+      "name": "Get All Research Area Source URLs",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        3780,
+        860
+      ],
+      "id": "43186093-dcb1-43cb-934a-36b1b5b6b64c",
+      "name": "Limit to One Row"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sources:\n{{ $json['Research Area 1 Source URLs'] }}\n{{ $json['Research Area 2 Source URLs'] }}\n{{ $json['Research Area 3 Source URLs'] }}\n{{ $json['Research Area 4 Source URLs'] }}\n{{ $json['Research Area 5 Source URLs'] }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI assistant specializing in generating well-formatted HTML source sections for research reports. You will be given a list of sources, each with an associated number. Your task is to generate an HTML-formatted \"Sources\" section where:\n1) Each source is displayed with its original number in brackets [ ].\n2) Each source is a clickable hyperlink that opens in a new tab when clicked.\n3) The list is structured in an unordered format (<ul>) for clarity and readability.\n\n## Formatting Guidelines:\n- The section title should be <h2>All Sources</h2>.\n- Use an unordered list (<ul>) to display the sources.\n- Each source should be in the format:\n<li><a href=\"SOURCE_URL\" target=\"_blank\">[NUMBER] Source URL (or just the URL if title not available from input)</a></li>\n- The original numbering of the sources must be preserved from the input strings (e.g. \"1. http://...\"). Parse the number and URL.\n\n## Example Output Structure:\n<div class=\"sources-section\">\n    <h2>All Sources</h2>\n    <ul>\n        <li><a href=\"https://example1.com\" target=\"_blank\">[1] https://example1.com</a></li>\n        <li><a href=\"https://example2.com\" target=\"_blank\">[2] https://example2.com</a></li>\n        <li><a href=\"https://example3.com\" target=\"_blank\">[3] https://example3.com</a></li>\n    </ul>\n</div>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        4180,
+        860
+      ],
+      "id": "27b79650-6af1-4b84-aa47-f0b6d75bc719",
+      "name": "Format All Sources List"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "All Sources List HTML": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4500,
+        860
+      ],
+      "id": "268261e7-1850-4b6f-84be-9dcdab0b928e",
+      "name": "Log Formatted Sources to Sheet",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Market Research Query",
+              "lookupValue": "={{ $('Market Research Request').first().json['Market Research Query'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4700,
+        860
+      ],
+      "id": "d0f3fca4-56e1-4bf2-a76a-d86faf6cfd6e",
+      "name": "Get Full Row for ToC & Combine"
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Code Node to combine multiple HTML report fields into a single HTML document\nconst item = items[0].json; // Data is in the json property of the first item\n\n// Expected fields from Google Sheet (retrieved by 'Get Full Row for ToC & Combine' node)\nconst marketResearchQuery = item['Market Research Query'] || 'Market Research Report';\nconst reportTitleHtml = item['Report Title HTML'] || '';\nconst reportIntroductionHtml = item['Report Introduction HTML'] || '';\nconst tableOfContentsHtml = item['Table of Contents HTML'] || ''; // Generated by 'Generate Full Table of Contents' and saved to sheet by 'Log ToC to Sheet'\n\nconst chapter1TitleHtml = item['Chapter 1 Title HTML'] || '';\nconst researchArea1ContentHtml = item['Research Area 1 Content HTML'] || '';\n\nconst chapter2TitleHtml = item['Chapter 2 Title HTML'] || '';\nconst researchArea2ContentHtml = item['Research Area 2 Content HTML'] || '';\n\nconst chapter3TitleHtml = item['Chapter 3 Title HTML'] || '';\nconst researchArea3ContentHtml = item['Research Area 3 Content HTML'] || '';\n\nconst chapter4TitleHtml = item['Chapter 4 Title HTML'] || '';\nconst researchArea4ContentHtml = item['Research Area 4 Content HTML'] || '';\n\nconst chapter5TitleHtml = item['Chapter 5 Title HTML'] || '';\nconst researchArea5ContentHtml = item['Research Area 5 Content HTML'] || '';\n\nconst allSourcesListHtml = item['All Sources List HTML'] || ''; // Generated by 'Format All Sources List' and saved by 'Log Formatted Sources to Sheet'\n\n// Basic HTML document structure\nconst fullHtmlReport = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>${marketResearchQuery.replace(/<[^>]*>?/gm, '')}</title> \n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #fff; color: #333; }\n        .report-container { max-width: 900px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); background-color: #fff; }\n        h1 { text-align: center; color: #00366D; }\n        .introduction-block { background-color: #f4f4f4; padding: 20px; font-size: 16px; line-height: 1.6; color: #333; margin-bottom:20px; }\n        .introduction-block h2 { margin-top:0; }\n        .introduction-block hr { margin-top: 1em; margin-bottom: 1em; border: 0; border-top: 1px solid #ccc; }\n        .report-section { background-color: #f4f4f4; padding: 20px; font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 10px; }\n        .report-section h1, .report-section h2, .report-section h3 { color: #333; }\n        .report-section hr { margin-top: 1em; margin-bottom: 1em; border: 0; border-top: 1px solid #ccc; }\n        .toc-block { background-color: #f4f4f4; padding: 20px; font-size: 16px; line-height: 1.6; color: #333; margin-bottom:20px; }\n        .toc-block h2 { margin-top:0; }\n        .toc-block hr { margin-top: 1em; margin-bottom: 1em; border: 0; border-top: 1px solid #ccc; }\n        .toc-block ol { padding-left: 20px; }\n        .toc-block ol li h2 { text-align:left; font-size: 1.2em; margin-bottom: 0.2em; }\n        .toc-block ol li ol { padding-left: 20px; margin-top: 0.2em; }\n        .toc-block ol li ol li { font-size: 0.9em; }\n        .sources-section { background-color: #f4f4f4; padding: 20px; font-size: 16px; line-height: 1.6; color: #333; margin-bottom:10px; }\n        .sources-section h2 { margin-top:0; }\n        .sources-section ul { padding-left: 20px; list-style-type: none;}\n        .sources-section ul li { margin-bottom: 0.5em; }\n        /* .chapter-title-block { text-align: center; color: #00366D; margin-top:30px; margin-bottom:15px; font-size:1.5em; font-weight:bold;} */ /* Chapter titles are already h2 from intro node */\n\n    </style>\n</head>\n<body>\n    <div class=\"report-container\">\n        ${reportTitleHtml}\n        ${reportIntroductionHtml}\n        ${tableOfContentsHtml}\n\n        ${chapter1TitleHtml}\n        ${researchArea1ContentHtml}\n\n        ${chapter2TitleHtml}\n        ${researchArea2ContentHtml}\n\n        ${chapter3TitleHtml}\n        ${researchArea3ContentHtml}\n\n        ${chapter4TitleHtml}\n        ${researchArea4ContentHtml}\n\n        ${chapter5TitleHtml}\n        ${researchArea5ContentHtml}\n\n        ${allSourcesListHtml}\n    </div>\n</body>\n</html>\n`;\n\n// Return as a new item with the combined HTML\nreturn [{ json: { CombinedMarketReportHTML: fullHtmlReport, ...item } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4500,
+        1120
+      ],
+      "id": "f1df89b2-9033-4b81-b60b-b535487c2e6c",
+      "name": "Assemble Full Market Report HTML"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.download_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4200,
+        1640
+      ],
+      "id": "4a84ffe5-42c8-408e-9cf6-0f56d9fecbd1",
+      "name": "Download Report PDF"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        3520,
+        920
+      ],
+      "id": "3e4623f3-fe6c-40c5-84b4-047ffc37b690",
+      "name": "Merge All Area Data Logs"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Market Research Request').first().json.Email }}",
+        "subject": "=MARTIN Report: {{ $('Market Research Request').first().json['Market Research Query'] }}",
+        "emailType": "text",
+        "message": "=Your Market Intelligence Report for \"{{ $('Market Research Request').first().json['Market Research Query'] }}\" is complete and attached.\n\nThis report provides insights into key market dynamics, competitive forces, and emerging trends to support your strategic decision-making.\n\nRegards,\nMARTIN (Market Analysis & Research Team Intelligence Navigator)",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        4400,
+        1640
+      ],
+      "id": "8a329914-40cc-4d8b-a8fd-e933382a74a6",
+      "name": "Deliver Market Intelligence Report",
+      "webhookId": "e066c2ef-6c8c-413e-a70e-05c88f29b9f6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aZjNVescRMzr9DqW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "output",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "section",
+              "cssSelector": "h1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1880,
+        -40
+      ],
+      "id": "2ffac542-b93c-4d20-83c7-b81d1466d8de",
+      "name": "Extract Area 1 Section Titles"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  sections: $input.all().map(item => item.json.section)\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        -40
+      ],
+      "id": "a60b2d8a-800f-44a3-b86b-5d02c75c326b",
+      "name": "Combine Area 1 Section Titles"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "output",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "section",
+              "cssSelector": "h1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        460
+      ],
+      "id": "17e68182-d6fe-4792-9c35-2b6ba07e6744",
+      "name": "Extract Area 2 Section Titles"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  sections: $input.all().map(item => item.json.section)\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        460
+      ],
+      "id": "6560bfaf-8ff7-401d-b83d-63d6ad404140",
+      "name": "Combine Area 2 Section Titles"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "output",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "section",
+              "cssSelector": "h1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        980
+      ],
+      "id": "894a2a38-2940-440b-b82b-09934df8cca3",
+      "name": "Extract Area 3 Section Titles"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "output",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "section",
+              "cssSelector": "h1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        1480
+      ],
+      "id": "39fe8670-ea33-4271-8c0f-70bc5e8122c7",
+      "name": "Extract Area 4 Section Titles"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "output",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "section",
+              "cssSelector": "h1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        1980
+      ],
+      "id": "02e54ae1-bbd8-439f-a926-c1a54bff973d",
+      "name": "Extract Area 5 Section Titles"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  sections: $input.all().map(item => item.json.section)\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        1980
+      ],
+      "id": "f46d106a-ba9e-4c34-8d7c-5d7551fda9b1",
+      "name": "Combine Area 5 Section Titles"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Chapter 1 Title: {{ $('Define Research Areas').first().json.output.topic_1 }}\nSections for Chapter 1:\n{{ $json['Research Area 1 Sections Titles']}}\n\nChapter 2 Title: {{ $('Define Research Areas').first().json.output.topic_2 }}\nSections for Chapter 2:\n{{ $json['Research Area 2 Sections Titles'] }}\n\nChapter 3 Title: {{ $('Define Research Areas').first().json.output.topic_3 }}\nSections for Chapter 3:\n{{ $json['Research Area 3 Sections Titles'] }}\n\nChapter 4 Title: {{ $('Define Research Areas').first().json.output.topic_4 }}\nSections for Chapter 4:\n{{ $json['Research Area 4 Sections Titles'] }}\n\nChapter 5 Title: {{ $('Define Research Areas').first().json.output.topic_5 }}\nSections for Chapter 5:\n{{ $json['Research Area 5 Sections Titles'] }}\n\nStyle Guide (for reference, use introduction's styling):\n{{ $json['Report Introduction HTML'] }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI assistant tasked with creating a structured Table of Contents (ToC) in professional HTML formatting for a market research report. Your output must follow the provided style guide and be clean, readable, and well-structured.\n\n## Guidelines\n1) Format Chapters as <h2> Elements\n- Each chapter title (derived from Research Area titles) should be a distinct <h2> heading within its list item.\n2) Format Sections as an Ordered List (<ol>)\n- Each section (derived from 'Research Area X Sections Titles', which are typically web page titles or main headings from scraped content) under a chapter should be a list item (<li>) inside a nested <ol>.\n- Maintain clear hierarchy and indentation for readability.\n3) Apply Given Style Guide\n- Wrap the ToC in a <div class=\"toc-block\"> (styling for this class will be provided in the final HTML document, similar to the introduction block).\n- The main title for the ToC should be <h2>Table of Contents</h2>.\n- Add a horizontal rule (<hr>) for separation after the main ToC title.\n\n## Input Data Structure (Conceptual - you will receive this as text input):\n- Chapter 1 Title: [Title for Research Area 1]\n- Sections for Chapter 1: [Newline-separated list of section titles for Area 1]\n- ... (repeated for Chapters 2-5)\n- Style Guide: [HTML of the introduction block, to reference its styling, e.g., background-color, padding, font-size, line-height, color]\n\n## Example Output (Illustrative - ensure actual chapter/section titles from input are used):\n<div class=\"toc-block\">\n    <h2>Table of Contents</h2>\n    <hr>\n    <ol>\n        <li>\n            <h2>Chapter 1: Market Trends and Adoption of Urban Drone Delivery</h2>\n            <ol>\n                <li>Global Drone Market Overview 2024</li>\n                <li>Urban Logistics: Challenges and Opportunities</li>\n                <li>Adoption Rates in Key Metropolitan Areas</li>\n            </ol>\n        </li>\n        <li>\n            <h2>Chapter 2: Competitive Landscape in Drone Delivery Services</h2>\n            <ol>\n                <li>Profile: Wing Aviation</li>\n                <li>Profile: Zipline International</li>\n                <li>Emerging Startups in the Sector</li>\n            </ol>\n        </li>\n        \n    </ol>\n</div>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        3740,
+        1120
+      ],
+      "id": "c68ebd0d-1c96-4291-9a26-9c2451ba2aa0",
+      "name": "Generate Full Table of Contents"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').first().json['Market Research Query'] }}",
+            "Table of Contents HTML": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "Market Research Query"
+          ],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4100,
+        1120
+      ],
+      "id": "cc2d2a63-f490-4bb1-8a90-a48cd17f57ea",
+      "name": "Log ToC to Sheet"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Market Research Query": "={{ $('Market Research Request').item.json['Market Research Query'] }}",
+            "Email": "={{ $('Market Research Request').item.json.Email }}",
+            "Report Title HTML": "={{ $json.output.title }}",
+            "Report Introduction HTML": "={{ $json.output.introduction }}",
+            "Chapter 1 Title HTML": "={{ $json.output.chapter_1 }}",
+            "Chapter 2 Title HTML": "={{ $json.output.chapter_2 }}",
+            "Chapter 3 Title HTML": "={{ $json.output.chapter_3 }}",
+            "Chapter 4 Title HTML": "={{ $json.output.chapter_4 }}",
+            "Chapter 5 Title HTML": "={{ $json.output.chapter_5 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Market Research Query",
+              "displayName": "Market Research Query",
+              "type": "string"
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "type": "string"
+            },
+            {
+              "id": "Report Title HTML",
+              "displayName": "Report Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Report Introduction HTML",
+              "displayName": "Report Introduction HTML",
+              "type": "string"
+            },
+            {
+              "id": "Chapter 1 Title HTML",
+              "displayName": "Chapter 1 Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Chapter 2 Title HTML",
+              "displayName": "Chapter 2 Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Chapter 3 Title HTML",
+              "displayName": "Chapter 3 Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Chapter 4 Title HTML",
+              "displayName": "Chapter 4 Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Chapter 5 Title HTML",
+              "displayName": "Chapter 5 Title HTML",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 1 Source URLs",
+              "displayName": "Research Area 1 Source URLs",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 1 Sections Titles",
+              "displayName": "Research Area 1 Sections Titles",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 1 Content HTML",
+              "displayName": "Research Area 1 Content HTML",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 2 Source URLs",
+              "displayName": "Research Area 2 Source URLs",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 2 Sections Titles",
+              "displayName": "Research Area 2 Sections Titles",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 2 Content HTML",
+              "displayName": "Research Area 2 Content HTML",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 3 Source URLs",
+              "displayName": "Research Area 3 Source URLs",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 3 Sections Titles",
+              "displayName": "Research Area 3 Sections Titles",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 3 Content HTML",
+              "displayName": "Research Area 3 Content HTML",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 4 Source URLs",
+              "displayName": "Research Area 4 Source URLs",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 4 Sections Titles",
+              "displayName": "Research Area 4 Sections Titles",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 4 Content HTML",
+              "displayName": "Research Area 4 Content HTML",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 5 Source URLs",
+              "displayName": "Research Area 5 Source URLs",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 5 Sections Titles",
+              "displayName": "Research Area 5 Sections Titles",
+              "type": "string"
+            },
+            {
+              "id": "Research Area 5 Content HTML",
+              "displayName": "Research Area 5 Content HTML",
+              "type": "string"
+            },
+            {
+              "id": "Table of Contents HTML",
+              "displayName": "Table of Contents HTML",
+              "type": "string"
+            },
+            {
+              "id": "All Sources List HTML",
+              "displayName": "All Sources List HTML",
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1300,
+        880
+      ],
+      "id": "9e83b352-268d-41b7-8556-c61d65383a35",
+      "name": "Log Report Outline"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"title\": \"<Generated Report Title>\",\n  \"introduction\": \"<Generated Introduction>\",\n  \"chapter_1\": \"<h2>Chapter 1: [Title]</h2>\",\n  \"chapter_2\": \"<h2>Chapter 2: [Title]</h2>\",\n  \"chapter_3\": \"<h2>Chapter 3: [Title]</h2>\",\n  \"chapter_4\": \"<h2>Chapter 4: [Title]</h2>\",\n  \"chapter_5\": \"<h2>Chapter 5: [Title]</h2>\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -1440,
+        1120
+      ],
+      "id": "8ca8bb54-d930-4299-9e82-2d64ef6710c8",
+      "name": "Parse Report Outline"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nLtek-h9e_Std_lfAG8NIG0TsX3yraYKy3kxJWZ2Av4"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Market Research Query",
+              "lookupValue": "={{ $('Market Research Request').first().json['Market Research Query'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4280,
+        1120
+      ],
+      "id": "6446d3c0-714c-4b66-b288-3a6929cddca9",
+      "name": "Get Full Row for Final Assembly"
+    },
+    {
+      "parameters": {
+        "content": "# Phase 1: Query Intake & Research Planning\n- User submits Market Research Query\n- MARTIN defines 5 key Research Areas\n- Report Outline (Title, Intro, Chapters) drafted",
+        "height": 1000,
+        "width": 1800,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2500,
+        440
+      ],
+      "id": "7f13c269-7022-4273-91d0-022252041480",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Phase 2: Parallel Data Gathering & Analysis (Per Research Area)\n- Fetch Data (Tavily)\n- Process & Number Sources\n- Analyze & Write Content (AI Agent)\n- Collate Results\n- Extract Section Titles (HTML)\n- Log Data to Sheet",
+        "height": 2580,
+        "width": 2140,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "5dfbea28-6656-4303-8b2f-d9b1e4372660",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Phase 3: Report Finalization\n- Merge all logged area data results\n- Get all source URLs from sheet\n- Format full sources list (AI Agent)\n- Log formatted sources to sheet\n- Get full row from sheet (for ToC generation)\n- Generate Table of Contents (AI Agent)\n- Log ToC to sheet\n- Get full row from sheet (for final assembly)",
+        "height": 820,
+        "width": 2100,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3320,
+        600
+      ],
+      "id": "de772177-7d41-4f22-b987-bc50ab8886e9",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "# Phase 4: Report Generation & Delivery\n- Assemble Full Market Report HTML (Code Node)\n- Generate PDF (APITemplate.io)\n- Download PDF\n- Deliver Market Intelligence Report (Email)",
+        "height": 320,
+        "width": 1220,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        1540
+      ],
+      "id": "eae4c13e-d6a5-456f-b1cb-c4c2c30533ec",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest-us.apitemplate.io/v2/create-pdf-from-html",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "apiTemplateIoApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filename",
+              "value": "={{ $('Market Research Request').first().json['Market Research Query'] }}.pdf"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"body\": \"{{$json[\"CombinedMarketReportHTML\"].replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n')}}\",\n  \"css\": \"\",\n  \"data\": {},\n  \"settings\": {\n    \"paper_size\": \"A4\",\n    \"orientation\": \"1\",\n    \"header_font_size\": \"9px\",\n    \"margin_top\": \"40\",\n    \"margin_right\": \"10\",\n    \"margin_bottom\": \"40\",\n    \"margin_left\": \"10\",\n    \"print_background\": \"1\",\n    \"displayHeaderFooter\": true,\n    \"custom_header\": \"<style>#header, #footer { padding: 0 !important; }</style>\\n<table style=\\\"width: 100%; padding: 0px 5px;margin: 0px!important;font-size: 8px\\\">\\n  <tr>\\n    <td style=\\\"text-align:left; width:30%!important;\\\"><span class=\\\"date\\\"></span></td>\\n    <td style=\\\"text-align:center; width:30%!important;\\\"><span class=\\\"pageNumber\\\"></span></td>\\n    <td style=\\\"text-align:right; width:30%!important;\\\"><span class=\\\"totalPages\\\"></span></td>\\n  </tr>\\n</table>\",\n    \"custom_footer\": \"<style>#header, #footer { padding: 0 !important; }</style>\\n<table style=\\\"width: 100%; padding: 0px 5px;margin: 0px!important;font-size: 8px\\\">\\n  <tr>\\n    <td style=\\\"text-align:left; width:30%!important;\\\"><span class=\\\"date\\\"></span></td>\\n    <td style=\\\"text-align:center; width:30%!important;\\\"><span class=\\\"pageNumber\\\"></span></td>\\n    <td style=\\\"text-align:right; width:30%!important;\\\"><span class=\\\"totalPages\\\"></span></td>\\n  </tr>\\n</table>\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4020,
+        1640
+      ],
+      "id": "5df91c9a-a835-44f1-a25e-c5d9ab9709dd",
+      "name": "Generate Market Report PDF",
+      "credentials": {
+        "apiTemplateIoApi": {
+          "id": "XRIlSji0oSep6jna",
+          "name": "APITemplate.io account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  sections: $input.all().map(item => item.json.section)\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        1480
+      ],
+      "id": "e651d9b5-d34b-4761-bceb-edbb9f61dee3",
+      "name": "Combine Area 3 Section Titles1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -2160,
+        1100
+      ],
+      "id": "917d9153-c7e5-40a6-b2a9-faaf9c3ee24e",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1620,
+        1100
+      ],
+      "id": "c7ac8929-494b-4aa1-a056-f645b6383796",
+      "name": "Ollama Chat Model1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        260
+      ],
+      "id": "3a7fdfef-24a0-4e62-a3cf-486858fa31e3",
+      "name": "Ollama Chat Model2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        740
+      ],
+      "id": "ccebb271-776a-462b-a221-f7b8bd365f83",
+      "name": "Ollama Chat Model3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1280
+      ],
+      "id": "99e9ddc9-4a7a-46ae-836a-e16458db2cdd",
+      "name": "Ollama Chat Model4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        1760
+      ],
+      "id": "ac3c19c0-31b4-49c8-b9cb-68bb0533c086",
+      "name": "Ollama Chat Model5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        2280
+      ],
+      "id": "f524e80b-0d0f-445d-8ee3-66fd4ccd0142",
+      "name": "Ollama Chat Model6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        5040,
+        1220
+      ],
+      "id": "48d965cc-0285-4a78-ba1e-e347cc6dd289",
+      "name": "Ollama Chat Model7"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Market Research Request": {
+      "main": [
+        [
+          {
+            "node": "Define Research Areas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Research Areas": {
+      "main": [
+        [
+          {
+            "node": "Generate Report Outline",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out Report Outline",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Research Area Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 Research Areas": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Define Research Areas",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Report Outline": {
+      "main": [
+        [
+          {
+            "node": "Log Report Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Report Outline": {
+      "main": [
+        [
+          {
+            "node": "Merge Research Area Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Research Areas and Outline": {
+      "main": [
+        [
+          {
+            "node": "Switch Research Area",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Research Area Keys": {
+      "main": [
+        [
+          {
+            "node": "Split Out Research Area Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Research Area Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Research Areas and Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Research Area Keys": {
+      "main": [
+        [
+          {
+            "node": "Merge Research Area Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Research Area": {
+      "main": [
+        [
+          {
+            "node": "Fetch Area 1 Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Area 2 Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Area 3 Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Area 4 Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Area 5 Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Area 1 Data to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge All Area Data Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Area 1 Data": {
+      "main": [
+        [
+          {
+            "node": "Split Area 1 Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Area 1 Results": {
+      "main": [
+        [
+          {
+            "node": "Number Area 1 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Area 1 Sources": {
+      "main": [
+        [
+          {
+            "node": "Analyze Area 1 Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Collate Area 1 Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 1 Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 1 Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze Area 1 Data": {
+      "main": [
+        [
+          {
+            "node": "Collate Area 1 Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 1 Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 1 Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Area 1 Outputs": {
+      "main": [
+        [
+          {
+            "node": "Extract Area 1 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Area 2 Data to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge All Area Data Logs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Area 2 Data": {
+      "main": [
+        [
+          {
+            "node": "Split Area 2 Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Area 2 Results": {
+      "main": [
+        [
+          {
+            "node": "Number Area 2 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Area 2 Sources": {
+      "main": [
+        [
+          {
+            "node": "Analyze Area 2 Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Collate Area 2 Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 2 Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 2 Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze Area 2 Data": {
+      "main": [
+        [
+          {
+            "node": "Collate Area 2 Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 2 Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 2 Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Area 2 Outputs": {
+      "main": [
+        [
+          {
+            "node": "Extract Area 2 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Area 3 Data to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge All Area Data Logs",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Fetch Area 3 Data": {
+      "main": [
+        [
+          {
+            "node": "Split Area 3 Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Area 3 Results": {
+      "main": [
+        [
+          {
+            "node": "Number Area 3 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Area 3 Sources": {
+      "main": [
+        [
+          {
+            "node": "Analyze Area 3 Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Collate Area 3 Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 3 Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 3 Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze Area 3 Data": {
+      "main": [
+        [
+          {
+            "node": "Collate Area 3 Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 3 Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 3 Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Area 3 Outputs": {
+      "main": [
+        [
+          {
+            "node": "Extract Area 3 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Area 4 Data to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge All Area Data Logs",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Fetch Area 4 Data": {
+      "main": [
+        [
+          {
+            "node": "Split Area 4 Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Area 4 Results": {
+      "main": [
+        [
+          {
+            "node": "Number Area 4 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Area 4 Sources": {
+      "main": [
+        [
+          {
+            "node": "Analyze Area 4 Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Collate Area 4 Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 4 Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 4 Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze Area 4 Data": {
+      "main": [
+        [
+          {
+            "node": "Collate Area 4 Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 4 Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 4 Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Area 4 Outputs": {
+      "main": [
+        [
+          {
+            "node": "Extract Area 4 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Area 5 Data to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge All Area Data Logs",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Fetch Area 5 Data": {
+      "main": [
+        [
+          {
+            "node": "Split Area 5 Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Area 5 Results": {
+      "main": [
+        [
+          {
+            "node": "Number Area 5 Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Area 5 Sources": {
+      "main": [
+        [
+          {
+            "node": "Analyze Area 5 Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Collate Area 5 Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 5 Analysis": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 5 Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Analyze Area 5 Data": {
+      "main": [
+        [
+          {
+            "node": "Collate Area 5 Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collate Area 5 Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Area 5 Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Area 5 Outputs": {
+      "main": [
+        [
+          {
+            "node": "Extract Area 5 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Research Area Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Format All Sources List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to One Row": {
+      "main": [
+        [
+          {
+            "node": "Get All Research Area Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format All Sources List": {
+      "main": [
+        [
+          {
+            "node": "Log Formatted Sources to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Formatted Sources to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Get Full Row for ToC & Combine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Full Row for ToC & Combine": {
+      "main": [
+        [
+          {
+            "node": "Generate Full Table of Contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble Full Market Report HTML": {
+      "main": [
+        [
+          {
+            "node": "Generate Market Report PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Report PDF": {
+      "main": [
+        [
+          {
+            "node": "Deliver Market Intelligence Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Area Data Logs": {
+      "main": [
+        [
+          {
+            "node": "Limit to One Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Area 1 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Combine Area 1 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Area 1 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Log Area 1 Data to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Area 2 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Combine Area 2 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Area 2 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Log Area 2 Data to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Area 3 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Log Area 3 Data to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Area 4 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Combine Area 3 Section Titles1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Area 5 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Combine Area 5 Section Titles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Area 5 Section Titles": {
+      "main": [
+        [
+          {
+            "node": "Log Area 5 Data to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Full Table of Contents": {
+      "main": [
+        [
+          {
+            "node": "Log ToC to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Report Outline": {
+      "main": [
+        [
+          {
+            "node": "Merge Research Areas and Outline",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Parse Report Outline": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Report Outline",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log ToC to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Get Full Row for Final Assembly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Full Row for Final Assembly": {
+      "main": [
+        [
+          {
+            "node": "Assemble Full Market Report HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Market Report PDF": {
+      "main": [
+        [
+          {
+            "node": "Download Report PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Area 3 Section Titles1": {
+      "main": [
+        [
+          {
+            "node": "Log Area 4 Data to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Define Research Areas",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Report Outline",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Area 1 Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Area 2 Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Area 3 Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Area 4 Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Area 5 Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format All Sources List",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Generate Full Table of Contents",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c0d90a86-efcc-4f61-8cbc-812a44ff49dd",
+  "meta": {
+    "instanceId": "6f065147ef3ae64e43689de7235e85f0abe3912d4a9d5526cae3bf312bed9859"
+  },
+  "id": "14ET9bgbnjGdRqD2",
+  "tags": []
+}

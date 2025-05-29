@@ -1,0 +1,475 @@
+{
+  "name": "A.I.R.E.S.",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Incoming Lead Details:\nName: {{ $json.fields.name }}\nEmail: {{ $json.fields.email }}\nCompany Name: {{ $json.fields.companyName }}\nIntent/Interest: {{ $json.fields.intent }}\nBudget: {{ $json.fields.budget }}\nProject Description: {{ $json.fields.projectDescription }} \nTimeline: {{ $json.fields.timeline }}\nLinkedIn Profile URL: {{ $json.fields.linkedInUrl }} \nX (Twitter) Profile URL: {{ $json.fields.xUrl }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are ARIES, an Automated Relationship Initiation & Engagement Specialist for \"**YOUR COMPANY NAME**\", an agency delivering AI solutions. Your goal is to draft hyper-personalized initial outreach messages (emails) to new leads. The primary objective of this first message is to build rapport, show understanding of their potential needs, and encourage them to book an introductory call.\n\n## Input Data:\nYou will receive information about the lead:\n- Name\n- Email\n- Company Name\n- Intent/Interest (their stated interest/problem)\n- Budget (if provided)\n- Project Description (if provided)\n- Timeline (if provided)\n- LinkedIn Profile URL (if available)\n- X (Twitter) Profile URL (if available)\n\n## Tools:\n1.  **LinkedIn Profile Scraper**: Use this tool by providing the lead's LinkedIn Profile URL to get their professional background, current role, recent activities, and company details.\n2.  **X (Twitter) Profile Scraper**: Use this tool by providing the lead's X (Twitter) Profile URL to understand their recent public posts, interests, and communication style.\n3.  **[Optional: Internal Project Database Tool - if you adapt one from original workflow]**: If the lead's intent or project description is clear, you can use this to find *one* highly similar past project by Dunder AI to subtly reference, focusing on the problem solved or the outcome. Do not list multiple projects.\n\n## Rules for Drafting Email:\n1.  **Hyper-Personalization is Key**:\n    * Reference specific, relevant details you find using the LinkedIn and X (Twitter) scraper tools. This could be a recent post, a shared interest, their company's recent achievement, or their specific role. Make the connection natural, not forced.\n    * Tailor the message to their `Intent` and `Project Description`.\n2.  **Conciseness**: Keep the email brief and to the point (3-4 short paragraphs maximum).\n3.  **Value Proposition**: Subtly highlight how Dunder AI's expertise could address their potential needs or interests, inspired by their profile and intent.\n4.  **Call to Action**: Gently guide them towards a short introductory call to discuss their ideas or challenges further. Suggest a brief 15-20 minute chat.\n5.  **Professional Tone**: Maintain a friendly, professional, and respectful tone.\n6.  **Output Format**: Provide the output as a JSON object with `subject` and `email_body` keys.\n\n## Final Notes:\n- Sign off emails as \"Jim, Dunder AI\".\n- Current date/time for context: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        280,
+        540
+      ],
+      "id": "21a4c503-8f84-4359-8c58-0ee1390a8aff",
+      "name": "Outreach Personalization Agent"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"email_body\": {\n      \"type\": \"string\",\n      \"description\": \"The body content of the drafted email\"\n    }\n  },\n  \"required\": [\"subject\", \"email_body\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        880
+      ],
+      "id": "315fa9b7-d9f6-47b0-80bd-87db7ddfa235",
+      "name": "Parse Agent Output (Draft/Final)"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json.fields.email }}",
+        "subject": "={{ $json.subject || $('Set Draft Email').item.json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.final_email_body || $('Set Draft Email').item.json.email_body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1580,
+        380
+      ],
+      "id": "f80d643b-1bc5-48a2-b085-e1fc21f89467",
+      "name": "Send Final Email to Lead",
+      "webhookId": "9ae2a2f2-de7c-46a1-93f7-8b2612d40751"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Draft Email Body: {{ $('Set Draft Email').item.json.email_body }}\n\nSubject: {{ $('Set Draft Email').item.json.subject }}\n\nHuman Feedback (if any): {{ $('Get Feedback & Compliance Review Request').item.json.data.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Overview\nYou are ARIES, a specialist AI agent for \"Dunder AI\" responsible for revising sales outreach messages and ensuring compliance with company ethical and cultural standards.\n\n## Input:\nYou will receive:\n1.  `Draft Email Body` & `Subject`: The initial outreach email drafted by another AI.\n2.  `Human Feedback` (optional): Specific instructions or feedback from a human reviewer if the draft was marked for revision.\n\n## Tools:\n1.  **Compliance Document Vector Store**: Use this tool to search and retrieve information from Dunder AI's internal compliance documents, ethical guidelines, and cultural standard manuals. You can query it with parts of the email or general compliance questions (e.g., \"Is it okay to mention X?\", \"Policy on Y?\").\n\n## Tasks:\n1.  **Incorporate Human Feedback**: If `Human Feedback` is provided and indicates revisions are needed, carefully revise the `Draft Email Body` to address all points raised.\n2.  **Compliance Check**:\n    * Review the (potentially revised) email content against Dunder AI's ethical and cultural standards using the \"Compliance Document Vector Store\" tool.\n    * Ensure the language is respectful, inclusive, honest, and does not make misleading claims or guarantees. Verify adherence to company communication policies.\n    * If necessary, make further edits to the email to ensure full compliance. Focus on clarity and adherence to standards. Do NOT invent new sales points or financial data.\n3.  **Generate Compliance Summary**: Provide a brief summary (1-2 sentences) of your review and actions. Example: \"Email revised based on human feedback. Compliance check passed; message aligns with company ethical and communication guidelines.\" or \"Original draft reviewed. Compliance check passed. Message aligns with standards.\"\n\n## Output Format:\nProvide the output as a JSON object with the following keys:\n{\n  \"subject\": \"<The original or revised email subject line>\",\n  \"final_email_body\": \"<The fully revised and compliant email body>\",\n  \"compliance_summary\": \"<Your brief compliance review summary>\"\n}\n\n## Final Notes:\n- The email should still be signed off as \"Jim, Dunder AI\".\n- Strive for clarity, professionalism, and adherence to Dunder AI's standards.\n- Current date/time for context: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1380,
+        640
+      ],
+      "id": "cd987d00-940a-461d-9f95-150829df6054",
+      "name": "Compliance & Revision Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3800e373-5f7a-4642-8392-d3a4aed9e067",
+              "name": "email_body",
+              "value": "={{ $json.output.email_body }}",
+              "type": "string"
+            },
+            {
+              "id": "new_id_for_subject",
+              "name": "subject",
+              "value": "={{ $json.output.subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        620,
+        540
+      ],
+      "id": "1beeaddf-e853-410d-821a-49825a9d0ddf",
+      "name": "Set Draft Email"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "internal-review@example.com",
+        "subject": "=APPROVAL & COMPLIANCE CHECK for New Lead: {{ $('Google Sheets Trigger').item.json.fields.name }}",
+        "message": "=ARIES has drafted an outreach email for {{ $('Google Sheets Trigger').item.json.fields.name }} from {{ $('Google Sheets Trigger').item.json.fields.companyName }} regarding: {{ $('Google Sheets Trigger').item.json.fields.intent }}.\nBudget: {{ $('Google Sheets Trigger').item.json.fields.budget }} | Timeline: {{ $('Google Sheets Trigger').item.json.fields.timeline }}.\n\n-- DRAFT EMAIL --\nSubject: {{ $json.subject }}\n\nBody:\n{{ $json.email_body }}\n-- END DRAFT --\n\nPlease reply to this email with:\n- \"Approved\" to send as is (compliance check will still be performed by ARIES before sending).\n- OR provide specific feedback for revisions (e.g., \"Revise: Change X to Y. Remove Z.\").",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        820,
+        540
+      ],
+      "id": "ba3aca93-fe8a-4d1e-b5a3-4e1736134d00",
+      "name": "Get Feedback & Compliance Review Request",
+      "webhookId": "10605e1c-7bc0-4a9f-b23a-9797cc88449e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aZjNVescRMzr9DqW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Approved",
+              "description": "The email draft has been reviewed and accepted as-is or with minimal affirmative comments. The human explicitly or implicitly expresses approval, indicating that no significant changes are needed before the compliance check and sending. Example phrases: \"Looks good.\", \"Go ahead.\", \"Approved.\", \"Send it.\", \"Perfect.\""
+            },
+            {
+              "category": "Declined_Needs_Revision",
+              "description": "The email draft has been reviewed, but the human requests modifications before it is sent. This includes suggested edits, rewording, or major revisions. Example phrases: \"Can we tweak this part?\", \"Needs changes: ...\", \"Rephrase this section about X.\", \"Not quite right—revise it to mention Y.\", \"Remove the part about Z.\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        980,
+        540
+      ],
+      "id": "02073e42-9c11-4c2c-b954-3ba94248b0e3",
+      "name": "Check Human Feedback"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        540
+      ],
+      "id": "a6af8d14-2287-4b99-b5a7-6ab45287bda4",
+      "name": "Google Sheets Trigger (New Lead)",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "tableName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "compliance_documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        880
+      ],
+      "id": "6d06b251-8360-4d8c-b32c-5869e9a3df86",
+      "name": "Tool: Compliance Docs Vector Store (Placeholder)"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        1020
+      ],
+      "id": "4416566a-b57b-4380-8322-25c643a60e8d",
+      "name": "Embeddings for Compliance Docs"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1520,
+        980
+      ],
+      "id": "0eca5dfb-1733-46dd-9d60-c98b535ce4bb",
+      "name": "Memory for Compliance Agent"
+    },
+    {
+      "parameters": {},
+      "id": "ad83c65b-9989-4247-89c4-61c6bbff30bb",
+      "name": "Tool: LinkedIn Profile Scraper (Placeholder)",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        420,
+        740
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "054bd745-031c-41b1-ad72-4219a4f6f233",
+      "name": "Tool: X (Twitter) Profile Scraper (Placeholder)",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        420,
+        900
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+              "name": "subject",
+              "value": "={{ $json.output.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "b2c3d4e5-f6a7-8901-2345-67890abcdef0",
+              "name": "final_email_body",
+              "value": "={{ $json.output.final_email_body }}",
+              "type": "string"
+            },
+            {
+              "id": "c3d4e5f6-a7b8-9012-3456-7890abcdef01",
+              "name": "compliance_summary",
+              "value": "={{ $json.output.compliance_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c323d6e1-93ba-421e-8e4a-eb284725d963",
+      "name": "Set Final Message & Compliance Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1780,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        940,
+        820
+      ],
+      "id": "e7564dcf-0773-4237-a9b8-52573079c8bd",
+      "name": "Ollama Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        920
+      ],
+      "id": "579cedeb-64ed-494a-bb65-73d3d2da4dd3",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        300,
+        760
+      ],
+      "id": "6b181d4b-36eb-4da4-b47b-fadcd0cba22f",
+      "name": "Ollama Chat Model1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Outreach Personalization Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Draft Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Agent Output (Draft/Final)": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Outreach Personalization Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Compliance & Revision Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compliance & Revision Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Final Message & Compliance Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Draft Email": {
+      "main": [
+        [
+          {
+            "node": "Get Feedback & Compliance Review Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Feedback & Compliance Review Request": {
+      "main": [
+        [
+          {
+            "node": "Check Human Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Human Feedback": {
+      "main": [
+        [
+          {
+            "node": "Send Final Email to Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compliance & Revision Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Compliance Docs Vector Store (Placeholder)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Compliance & Revision Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings for Compliance Docs": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Tool: Compliance Docs Vector Store (Placeholder)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory for Compliance Agent": {
+      "ai_memory": [
+        [
+          {
+            "node": "Compliance & Revision Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Final Message & Compliance Summary": {
+      "main": [
+        [
+          {
+            "node": "Get Feedback & Compliance Review Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check Human Feedback",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compliance & Revision Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Outreach Personalization Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1ad1e382-2726-460c-8341-75099393b2c2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6f065147ef3ae64e43689de7235e85f0abe3912d4a9d5526cae3bf312bed9859"
+  },
+  "id": "z2yNLp4561kUB3lH",
+  "tags": []
+}

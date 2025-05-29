@@ -1,0 +1,1537 @@
+{
+  "name": "F.R.A.N.C.E.S.",
+  "nodes": [
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data || $json.text || $json.concatenated_data }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_id",
+                "value": "={{ $('Set File ID').first().json.file_id }}"
+              },
+              {
+                "name": "file_title",
+                "value": "={{ $('Set File ID').first().json.file_title }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cea01f8f-a3d4-44ee-99aa-06598ee746a4",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        2060
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Tool to Add/Update a Google Drive File in Knowledge Base (PostgreSQL & Supabase Vector Store)",
+        "height": 1387,
+        "width": 1633,
+        "color": 5
+      },
+      "id": "a6743978-8d48-4598-9b30-b10189a82d98",
+      "name": "File Ingestion Sub-Workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2320,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set File ID').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "eb7d76dd-5ad8-4b12-b0fa-be0bb626b6df",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1160,
+        1060
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "2f13933c-e6ba-4434-8552-c13ab9170667",
+      "name": "File Created Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        1040
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "U08QSmN5RxMxQriz",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "c12da3bc-632f-4d8c-9df2-de0e5ada5e25",
+      "name": "File Updated Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "893d0771-5132-4e1d-a9ee-0bff28a59007",
+      "name": "Extract Document Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        2060
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "id": "d8f38747-d380-4438-95b1-4791cbb12717",
+      "name": "Financial Analysis Agent Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1,
+      "position": [
+        -1880,
+        280
+      ],
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "documents",
+        "filterType": "string",
+        "filterString": "=metadata->>file_id=like.*{{ $json.file_id }}*"
+      },
+      "id": "436ba5a3-52a7-4565-bc01-268e678b0a68",
+      "name": "Delete Old Vector Doc Rows",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1660,
+        1060
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10646eae-ae46-4327-a4dc-9987c2d76173",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f4536df5-d0b1-4392-bf17-b8137fb31a44",
+              "name": "file_type",
+              "value": "={{ $json.mimeType }}",
+              "type": "string"
+            },
+            {
+              "id": "77d782de-169d-4a46-8a8e-a3831c04d90f",
+              "name": "file_title",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "9bde4d7f-e4f3-4ebd-9338-dce1350f9eab",
+              "name": "file_url",
+              "value": "={{ $json.webViewLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb28330b-c7bd-49f9-ba24-701220ce5f80",
+      "name": "Set File ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1820,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## FP&A Engine",
+        "height": 585,
+        "width": 876
+      },
+      "id": "a6f74dc0-761c-49e6-acb9-ce3728e1a9a4",
+      "name": "Agent Interface Section",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2340,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "da35e879-84fe-40c4-878d-0de76176f749",
+      "name": "Extract PDF Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        1500
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "fac14757-35df-40cf-970a-dc42417029ba",
+      "name": "Aggregate Tabular Data",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1960,
+        1680
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "2681fa16-a1c2-499f-b5d0-aea946f94565",
+      "name": "Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        2200
+      ]
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "concatenate",
+              "field": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc6f57c4-b5d1-4670-ac5e-1b9ae5966c9c",
+      "name": "Convert Table to Text (for Vector Store)",
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are F.R.A.N.C.E.S. - the Financial Analysis Agent. Your primary source of information for answering user questions is the knowledge base accessible through your tools (Supabase vector store for text documents, PostgreSQL for tabular data).\n\nWhen you receive a financial query:\n1.  **Utilize Tools:** Your first action is to use the provided tools ('List Documents', 'Get File Contents', 'Query Document Rows', 'Answer questions with a vector store') to find relevant information from financial documents (PDFs, text, CSVs, Excel files).\n2.  **Analyze Retrieved Data:** Critically analyze *only* the information retrieved via your tools. Do not use external knowledge.\n3.  **Formulate Report/Answer:** Generate a comprehensive and professional financial analysis or answer that directly addresses the user's query. Ensure your output is based *solely* on the retrieved data.\n4.  **Acknowledge Limitations:** If the knowledge base doesn't contain sufficient information, clearly state this. Do not speculate.\n5.  **Professional Tone:** Maintain a professional, respectful, and informative tone.\n\nYour expertise is strictly limited to the information within the connected knowledge base. Output your findings as a clear textual report or answer."
+        }
+      },
+      "id": "859385ca-4d2e-4e9f-92a7-c4080119cea4",
+      "name": "Financial Analysis Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1860,
+        40
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "2ae7faa7-a936-4621-a680-60c512163034",
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "fc193b06-363b-4699-a97d-e5a850138b0e",
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "=application/vnd.google-apps.spreadsheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "b69f5605-0179-4b02-9a32-e34bb085f82d",
+                    "leftValue": "={{ $('Set File ID').item.json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 3
+        }
+      },
+      "id": "edf3439d-5ace-4475-80d9-397cc32c7074",
+      "name": "Switch File Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -980,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "id": "56f9433e-b770-4adc-94ee-8aea3e8772cb",
+      "name": "Insert into Supabase Vectorstore",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        1800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "id": "3f763855-98fe-4e85-9aee-c168ca257a08",
+      "name": "Extract from Excel",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2180,
+        1680
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f422e2e0-381c-46ea-8f38-3f58c501d8b9",
+              "name": "schema",
+              "value": "={{ $('Extract from Excel').isExecuted ? $('Extract from Excel').first().json.keys().toJsonString() : $('Extract from CSV').first().json.keys().toJsonString() }}",
+              "type": "string"
+            },
+            {
+              "id": "bb07c71e-5b60-4795-864c-cc3845b6bc46",
+              "name": "data",
+              "value": "={{ $json.concatenated_data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1320,
+        1620
+      ],
+      "id": "cb0e75eb-a6cc-4004-bd09-629b840e1d9d",
+      "name": "Set Schema for Tabular Data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2180,
+        1860
+      ],
+      "id": "6ce1c794-8b17-4dd8-b7a3-d0913b8a87a2",
+      "name": "Extract from CSV"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to fetch all available documents, including the table schema if the file is a CSV or Excel file. This helps understand what financial data is available.",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "document_metadata",
+          "mode": "list",
+          "cachedResultName": "document_metadata"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        -1760,
+        220
+      ],
+      "id": "3a70658c-99d6-41d2-a066-f9860e8054fa",
+      "name": "Tool: List Financial Documents"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Given a file ID, fetches the text from the document (PDF, TXT). Useful for retrieving textual financial reports or narratives.",
+        "operation": "executeQuery",
+        "query": "SELECT \n    string_agg(content, ' ') as document_text\nFROM documents\n  WHERE metadata->>'file_id' = $1\nGROUP BY metadata->>'file_id';",
+        "options": {
+          "queryReplacement": "={{ $fromAI('file_id') }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        -1640,
+        280
+      ],
+      "id": "f53ba71d-3ce4-445a-9ee3-f51db059d8c5",
+      "name": "Tool: Get Text File Contents (from Vector Store)"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Run a SQL query on tabular financial data (CSV, Excel). Use this to query from the document_rows table once you know the file ID (dataset_id). The row_data is a JSONB field containing all keys from the file schema (available via 'List Financial Documents' tool).\n\nExample: Get average revenue for file '123xyz':\nSELECT AVG((row_data->>'revenue')::numeric) FROM document_rows WHERE dataset_id = '123xyz';\n\nExample: Total sales by category for file 'abc789':\nSELECT row_data->>'category' as category, SUM((row_data->>'sales')::numeric) as total_sales FROM document_rows WHERE dataset_id = 'abc789' GROUP BY row_data->>'category';",
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql_query') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "position": [
+        -1760,
+        400
+      ],
+      "id": "009ae334-a166-4ed0-973c-2eb4ba43017e",
+      "name": "Tool: Query Tabular Financial Data (SQL)"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1980,
+        1040
+      ],
+      "id": "1cbe05ab-8e50-433f-a75d-108f3f8e83de",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "document_rows",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "dataset_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Set File ID').item.json.file_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1500,
+        1060
+      ],
+      "id": "526ccbde-6278-4160-8c35-69780dce9615",
+      "name": "Delete Old Tabular Data Rows",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "document_metadata",
+          "mode": "list",
+          "cachedResultName": "document_metadata"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Set File ID').item.json.file_id }}",
+            "title": "={{ $('Set File ID').item.json.file_title }}",
+            "url": "={{ $('Set File ID').item.json.file_url }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "schema",
+              "displayName": "schema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1340,
+        1060
+      ],
+      "id": "18bb1c20-ab2b-4078-ba25-78f37a517811",
+      "name": "Insert/Update Document Metadata (Postgres)",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "document_rows",
+          "mode": "list",
+          "cachedResultName": "document_rows"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dataset_id": "={{ $('Set File ID').item.json.file_id }}",
+            "row_data": "={{ $json.toJsonString().replaceAll(/'/g, \"''\") }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dataset_id",
+              "displayName": "dataset_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_data",
+              "displayName": "row_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1960,
+        1860
+      ],
+      "id": "d7fe6416-1139-4eeb-8167-40c45957a7ec",
+      "name": "Insert Tabular Data Rows (Postgres)"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "document_metadata",
+          "mode": "list",
+          "cachedResultName": "document_metadata"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Set File ID').item.json.file_id }}",
+            "schema": "={{ $json.schema }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "schema",
+              "displayName": "schema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1080,
+        1520
+      ],
+      "id": "dfab96c4-7b11-411a-8945-0c6ef58a29c4",
+      "name": "Update Schema in Document Metadata (Postgres)"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "frances-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "46978bb3-dd8f-40a0-811b-b385c2cff441",
+      "name": "FRANCES Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3260,
+        100
+      ],
+      "webhookId": "bf4dd093-bb02-472c-9454-7ab9af97bd1d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId || $id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ce915aed-6183-4456-b139-a9b878c0237c",
+      "name": "Set Chat Input & Session ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2180,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        480
+      ],
+      "id": "37aba6c3-b13b-49e5-a9a1-c95c562aef21",
+      "name": "Supabase Vector Store (for Tool)",
+      "credentials": {
+        "supabaseApi": {
+          "id": "k1hCmV51BaKB3N9i",
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        500
+      ],
+      "id": "dcd641f4-70e4-444e-8d09-15bef8f0bd2d",
+      "name": "Groq for Vector Store Tool"
+    },
+    {
+      "parameters": {
+        "name": "RAG_Financial_Documents",
+        "description": "This tool performs semantic search over textual financial documents (like PDFs, text files, or textual summaries of tables) stored in the Supabase vector store. Use this for questions requiring understanding of narrative content, financial statements, or general information within these documents.",
+        "topK": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -1020,
+        320
+      ],
+      "id": "b476582b-c6a2-447d-9b27-1c09dfd7e27e",
+      "name": "Tool: Vector Store RAG for Financial Docs"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Financial Analysis Agent').item.json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are F.R.A.N.C.E.S. - the Compliance Engine Specialist. Your role is to review financial reports and analyses for adherence to common financial compliance standards and data presentation best practices.\nYou will receive a financial analysis or report as input.\n\nYour tasks are:\n1.  **Review Content:** Carefully examine the provided financial text for clarity, consistency, and potential (simulated) compliance red flags (e.g., ambiguous statements, unsupported claims, presentation of sensitive PII-like data if applicable - though you don't have real PII). Assume standard financial reporting principles apply.\n2.  **Filter/Suggest Modifications (If Necessary):** If you identify areas that could be misconstrued or do not meet high standards of financial reporting clarity, you may make minor modifications to the text to improve it. Focus on neutrality and factual presentation. DO NOT invent new financial data.\n3.  **Generate Compliance Summary:** Provide a brief summary (2-3 sentences) of your review. State whether the report appears compliant or if any adjustments were made for clarity/presentation.\n\nOutput ONLY a JSON object with the following two keys:\n{\n  \"reviewed_report_text\": \"<The original or slightly modified financial report text, ensuring it is compliant and clear>\",\n  \"compliance_summary\": \"<Your brief compliance review summary>\"\n}\n\nStrictly adhere to the output format. Do not add any other text outside this JSON structure.\nYour knowledge is based on general financial reporting principles. You are not an legal expert."
+        }
+      },
+      "id": "feebbf52-0246-48d5-91bb-adeb2e03b70f",
+      "name": "Compliance Review Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1260,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"reviewed_report_text\": \"The reviewed and potentially adjusted financial report content goes here.\",\n  \"compliance_summary\": \"Compliance check summary: The report appears to be compliant with standard financial reporting principles. No major issues found.\"\n}\n"
+      },
+      "id": "b06db535-e076-4eed-972e-a6a5378452d9",
+      "name": "Parse Compliance Output",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -980,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2ec58598-965b-4606-ac7c-50a96173e87f",
+      "name": "Respond with Financial Report & Compliance Summary",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Compliance Engine",
+        "height": 420,
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1360,
+        -340
+      ],
+      "typeVersion": 1,
+      "id": "21caa5b4-f544-4794-a5ad-a77bf6eb5c71",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## RAG Database",
+        "height": 500,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1240,
+        300
+      ],
+      "typeVersion": 1,
+      "id": "b6679af6-11a4-40e6-8b66-ee19d71820ef",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        2060
+      ],
+      "id": "e967b7cb-98ad-4a2c-b589-8c315e58794b",
+      "name": "Embeddings Ollama"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        660
+      ],
+      "id": "da6ef8a9-4e55-4802-875a-f8aacb2965a0",
+      "name": "Embeddings Ollama1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -1260,
+        -40
+      ],
+      "id": "e1ce52a2-d798-43f3-b768-3606c0dae2cf",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        400
+      ],
+      "id": "079a203e-90a2-4550-82fa-53d8462cdfa9",
+      "name": "Ollama Chat Model1"
+    },
+    {
+      "parameters": {
+        "content": "## TRIGGER",
+        "height": 220,
+        "width": 280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3380,
+        60
+      ],
+      "typeVersion": 1,
+      "id": "0bcd15d2-2634-4218-a467-ea9b1470ce55",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## OUTPUT",
+        "height": 220,
+        "width": 280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -300
+      ],
+      "typeVersion": 1,
+      "id": "75121435-ceaa-443e-96a8-a1c19f118164",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Switch File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Created Trigger": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Document Text": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Analysis Agent Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Old Vector Doc Rows": {
+      "main": [
+        [
+          {
+            "node": "Delete Old Tabular Data Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File ID": {
+      "main": [
+        [
+          {
+            "node": "Delete Old Vector Doc Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Updated Trigger": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Text": {
+      "main": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Tabular Data": {
+      "main": [
+        [
+          {
+            "node": "Convert Table to Text (for Vector Store)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Table to Text (for Vector Store)": {
+      "main": [
+        [
+          {
+            "node": "Set Schema for Tabular Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Compliance Review Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch File Type": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from Excel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from CSV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Document Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from Excel": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Tabular Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert Tabular Data Rows (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Schema for Tabular Data": {
+      "main": [
+        [
+          {
+            "node": "Update Schema in Document Metadata (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from CSV": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Tabular Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert Tabular Data Rows (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: List Financial Documents": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Get Text File Contents (from Vector Store)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Query Tabular Financial Data (SQL)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Set File ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert into Supabase Vectorstore": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Old Tabular Data Rows": {
+      "main": [
+        [
+          {
+            "node": "Insert/Update Document Metadata (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert/Update Document Metadata (Postgres)": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FRANCES Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Chat Input & Session ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Chat Input & Session ID": {
+      "main": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store (for Tool)": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Tool: Vector Store RAG for Financial Docs",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq for Vector Store Tool": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tool: Vector Store RAG for Financial Docs",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Vector Store RAG for Financial Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compliance Review Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond with Financial Report & Compliance Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Compliance Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Compliance Review Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Supabase Vectorstore",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store (for Tool)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compliance Review Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "90102155-4cf6-4bbd-b486-9cdad1a3a6e0",
+  "meta": {
+    "instanceId": "6f065147ef3ae64e43689de7235e85f0abe3912d4a9d5526cae3bf312bed9859"
+  },
+  "id": "v4wt8Mp8IwMzlyE6",
+  "tags": []
+}
